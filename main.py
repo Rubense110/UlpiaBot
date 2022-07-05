@@ -2,7 +2,6 @@ import os
 from discord.ext import commands
 from discord import *
 from dotenv import load_dotenv
-from numpy import true_divide
 from stats import *
 import requests
 import sys
