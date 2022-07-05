@@ -1,10 +1,13 @@
+from http.client import InvalidURL
 import os
 from tkinter import EXCEPTION
+from xmlrpc.client import MAXINT
 from discord.ext import commands
 from discord import *
 from dotenv import load_dotenv
 from numpy import true_divide
 from stats import *
+from bs4 import BeautifulSoup
 import requests
 
 load_dotenv()                           #bot token
@@ -21,12 +24,12 @@ enlace = "https://skanderbeg.pm/api.php?key="+apikey+"&scope=getCountryData&save
 csvNuevo= ("./data/csv/new.csv")
 csvAntiguo= ("./data/csv/old.csv")
 contries= ("./data/00_countries.txt")
+skanderDown= "The savefile with given ID was not foundSkanderbeg's server might be temporarily down.Otherwise, if you tried to upload a save during a downtime you might need to reupload it.Apologies for the inconvenience."
 def actualizaURL():
     global enlace
     global apikey
     global save
     enlace= "https://skanderbeg.pm/api.php?key="+apikey+"&scope=getCountryData&save="+save+"&country=&value=player;total_development;overall_strength;monthly_income;FL;innovativeness;max_manpower;spent_total;provinces;armyStrength;average_monarch;buildings_value;total_mana_spent_on_deving;qualityScore;spent_on_advisors&format=csv&playersOnly=true"
-
 # Commands section
 @bot.event                  # error management
 async def on_command_error(ctx,error):
@@ -35,7 +38,7 @@ async def on_command_error(ctx,error):
 
 
 @bot.command(name= 'stats') #stats builder
-async def stats(ctx,currentLink, oldLink="",canalID: int=None):
+async def stats(ctx,currentLink, oldLink="",canalID=None):
     """
     >stats (current link) (previous session link) (canal id)
 
@@ -60,7 +63,25 @@ async def stats(ctx,currentLink, oldLink="",canalID: int=None):
     global csvAntiguo
     global csvNuevo
     ctxCommand= ctx
-    try:    
+
+    try:
+        try:
+            link1= requests.get(currentLink)
+            link2= requests.get(oldLink)
+        except requests.exceptions.RequestException: 
+            raise Exception("Error, at least 1 incorrect URL")
+        
+        soup= BeautifulSoup(link1.text, "html.parser")
+        soup2= BeautifulSoup(link2.text, "html.parser")
+        
+        if(bot.get_channel(canalID) == None and canalID != None):
+            raise Exception("Invalid discord channel ID")
+        elif(soup.title.get_text()== "404 Not Found" or soup2.title.get_text()== "404 Not Found"):
+            raise Exception("404 Not Found Error on at least 1 Link")
+        elif(soup.h1.get_text()== skanderDown or soup2.h1.get_text()== skanderDown):
+            raise Exception(str(soup.h1).replace("<h1>","").replace("</h1>","").replace("<br/>","\n"))
+
+        
         save= currentLink.split("=")[1]
         actualizaURL()
         peticion = requests.get(enlace).text
@@ -74,9 +95,12 @@ async def stats(ctx,currentLink, oldLink="",canalID: int=None):
         escribeArchivo(csvAntiguo,peticion)
         arreglaCSV(csvAntiguo)
         arreglaCSV(csvAntiguo)
+
     except Exception as e:
-        await ctx.send("An error ocurred, most likely skanderbeg is down")
+        await ctx.send(e)
         raise  
+
+    
     b=False
     while(b==False):
         try:
@@ -87,7 +111,7 @@ async def stats(ctx,currentLink, oldLink="",canalID: int=None):
         
             plt.close("all")
             channel= bot.get_channel(canalID)
-            if(canalID==None):
+            if(canalID==1):
                 await ctx.send(" Development "              ,file=File('./data/graphs/dev.png')) 
                 await ctx.send(" Clicks "                   ,file=File('./data/graphs/clicks.png'))
                 await ctx.send(" Overall Strenght"          ,file=File('./data/graphs/fuerzaPais.png'))
