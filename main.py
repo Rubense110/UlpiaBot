@@ -111,7 +111,7 @@ async def stats(ctx,currentLink, oldLink="",canalID=None):
         
             plt.close("all")
             channel= bot.get_channel(canalID)
-            if(canalID==1):
+            if(canalID==None):
                 await ctx.send(" Development "              ,file=File('./data/graphs/dev.png')) 
                 await ctx.send(" Clicks "                   ,file=File('./data/graphs/clicks.png'))
                 await ctx.send(" Overall Strenght"          ,file=File('./data/graphs/fuerzaPais.png'))
