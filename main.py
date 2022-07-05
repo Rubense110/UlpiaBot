@@ -1,10 +1,11 @@
 import os
+from tkinter import EXCEPTION
 from discord.ext import commands
 from discord import *
 from dotenv import load_dotenv
+from numpy import true_divide
 from stats import *
 import requests
-import sys
 
 load_dotenv()                           #bot token
 TOKEN = os.getenv('DISCORD_TOKEN')
@@ -14,7 +15,7 @@ bot = commands.Bot(command_prefix='>')  #bot prefix ej: >save
 
 
 # Global section
-apikey = "place your skanderbeg API key here"
+apikey = "f9944c9936c1fc48b4d3b57bab261710"
 save = ""
 enlace = "https://skanderbeg.pm/api.php?key="+apikey+"&scope=getCountryData&save="+save+"&country=&value=player;total_development;overall_strength;monthly_income;FL;innovativeness;max_manpower;spent_total;provinces;armyStrength;average_monarch;buildings_value;total_mana_spent_on_deving;qualityScore;spent_on_advisors&format=csv&playersOnly=true"
 csvNuevo= ("./data/csv/new.csv")
@@ -75,7 +76,7 @@ async def stats(ctx,currentLink, oldLink="",canalID: int=None):
         arreglaCSV(csvAntiguo)
     except Exception as e:
         await ctx.send("An error ocurred, most likely skanderbeg is down")
-        sys.exit(1)
+        raise  
     b=False
     while(b==False):
         try:

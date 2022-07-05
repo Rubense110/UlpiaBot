@@ -22,6 +22,7 @@ def arreglaCSV(csv):
         -- when the buildings value is zero it is returned as nothing, resulting in a missing "0" element in that country, which is inserted here
         -- sometimes skanderbeg does not know the player of a certain country despite being labeled as a player country, resulting in the "player"
            element being missing, which is solved labeling that player as "undefined"
+        -- when a country forms another one it must be specified by the user, this is solved in main.py and not here
     '''
 
     file= open (csv, "r")
@@ -51,6 +52,9 @@ def arreglaCSV(csv):
     fout.close()
 
 def listaTags(csv):
+    '''
+    returns a list of the first element from all rows of a csv file
+    '''
     file= open (csv, "r")
     res= list()
     for line in file:
@@ -59,6 +63,9 @@ def listaTags(csv):
     return res
     
 def escribeTag(csv,tag,tagSustituto):
+    '''
+    replaces the tag (first element) element of a certain row in the given csv file by the element tagSustituto
+    '''
     file= open (csv, "r")
     replacement= ""
     for line in file:
