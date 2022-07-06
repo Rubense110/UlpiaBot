@@ -1,11 +1,8 @@
 from http.client import InvalidURL
 import os
-from tkinter import EXCEPTION
-from xmlrpc.client import MAXINT
 from discord.ext import commands
 from discord import *
 from dotenv import load_dotenv
-from numpy import true_divide
 from stats import *
 from bs4 import BeautifulSoup
 import requests
@@ -31,14 +28,9 @@ def actualizaURL():
     global save
     enlace= "https://skanderbeg.pm/api.php?key="+apikey+"&scope=getCountryData&save="+save+"&country=&value=player;total_development;overall_strength;monthly_income;FL;innovativeness;max_manpower;spent_total;provinces;armyStrength;average_monarch;buildings_value;total_mana_spent_on_deving;qualityScore;spent_on_advisors&format=csv&playersOnly=true"
 # Commands section
-@bot.event                  # error management
-async def on_command_error(ctx,error):
-    if isinstance(error,commands.errors.MissingRequiredArgument):
-        await ctx.send("invalid input :\n"+str(error))
-
 
 @bot.command(name= 'stats') #stats builder
-async def stats(ctx,currentLink, oldLink="",canalID=None):
+async def stats(ctx,currentLink, oldLink="",canalID="    1"):
     """
     >stats (current link) (previous session link) (canal id)
 
@@ -57,30 +49,62 @@ async def stats(ctx,currentLink, oldLink="",canalID=None):
 
     only works for mp links
     """
+
     mat.rcParams['figure.figsize'] = (19.2,10.8)
     global enlace
     global save
     global csvAntiguo
     global csvNuevo
     ctxCommand= ctx
-
+    try:
+        canal= int(canalID)
+    except Exception as e:
+        await ctx.send("Incorrect canal Id")
+        raise
     try:
         try:
+
+
+            hasH1 = False
+            hasH2 = False
             link1= requests.get(currentLink)
-            link2= requests.get(oldLink)
+            if(str(currentLink).startswith("https://skanderbeg.pm") != True or str(oldLink).startswith("https://skanderbeg.pm") != True):
+                raise Exception("That is no skanderbeg link sir :/")
+
+            if(oldLink !=""):
+                link2= requests.get(oldLink)
+                soup2= BeautifulSoup(link2.text, "html.parser")
+                if(soup2.title.get_text()== "404 Not Found"):
+                    raise Exception("404 Not Found Error on at least 1 Link")
+                if(soup2.h1 != None): hasH1 = True
+                if(hasH1  == True):
+                    if(soup2.h1.get_text()== skanderDown):
+                        raise Exception(str(soup2.h1).replace("<h1>","").replace("</h1>","").replace("<br/>","\n"))
+
+                if(soup2.h2 != None): hasH2 = True
+                if(hasH2 == True):
+                    if(soup2.h2.get_text().strip()=="No game was set"):
+                        raise Exception("Incorrect save ID, check your skanderberg links")
+
         except requests.exceptions.RequestException: 
             raise Exception("Error, at least 1 incorrect URL")
-        
-        soup= BeautifulSoup(link1.text, "html.parser")
-        soup2= BeautifulSoup(link2.text, "html.parser")
-        
-        if(bot.get_channel(canalID) == None and canalID != None):
-            raise Exception("Invalid discord channel ID")
-        elif(soup.title.get_text()== "404 Not Found" or soup2.title.get_text()== "404 Not Found"):
-            raise Exception("404 Not Found Error on at least 1 Link")
-        elif(soup.h1.get_text()== skanderDown or soup2.h1.get_text()== skanderDown):
-            raise Exception(str(soup.h1).replace("<h1>","").replace("</h1>","").replace("<br/>","\n"))
 
+        soup= BeautifulSoup(link1.text, "html.parser")
+
+        if(bot.get_channel(canal) == None and canalID != "    1"):
+            raise Exception("Invalid discord channel ID")
+        elif(soup.title.get_text()== "404 Not Found"):
+            raise Exception("404 Not Found Error on at least 1 Link")
+
+       
+        if(soup.h1 != None): hasH1 == True
+        if(hasH1  == True):
+            if(soup.h1.get_text()== skanderDown):
+                raise Exception(str(soup.h1).replace("<h1>","").replace("</h1>","").replace("<br/>","\n"))
+        if(soup.h2 != None): hasH2 == True
+        if(hasH2 == True):
+            if(soup.h2.get_text().strip()=="No game was set"):
+                raise Exception("Incorrect save ID, check your skanderberg links")
         
         save= currentLink.split("=")[1]
         actualizaURL()
@@ -99,7 +123,6 @@ async def stats(ctx,currentLink, oldLink="",canalID=None):
     except Exception as e:
         await ctx.send(e)
         raise  
-
     
     b=False
     while(b==False):
@@ -110,8 +133,8 @@ async def stats(ctx,currentLink, oldLink="",canalID=None):
         
         
             plt.close("all")
-            channel= bot.get_channel(canalID)
-            if(canalID==None):
+            channel= bot.get_channel(canal)
+            if(canalID=="    1"):
                 await ctx.send(" Development "              ,file=File('./data/graphs/dev.png')) 
                 await ctx.send(" Clicks "                   ,file=File('./data/graphs/clicks.png'))
                 await ctx.send(" Overall Strenght"          ,file=File('./data/graphs/fuerzaPais.png'))
@@ -141,9 +164,12 @@ async def stats(ctx,currentLink, oldLink="",canalID=None):
                 await channel.send(" Spent on Advisors "        ,file=File('./data/graphs/consejeros.png'))
             b=True
         except ValueError as e:
+            if(len(str(e).split(" ")[0].strip("'"))>3):
+                await ctx.send("Those saves are not related or you did put them in the incorrect order")
+                print(e)
+                raise Exception("Those saves are not related or you did put them in the incorrect order")
             def check(m):
                 return len(m.content) == 3 and m.content in ls and m.channel == ctx.channel
-
             tagError= str(e).split(" ")[0].strip("'")
 
             try:
@@ -156,7 +182,7 @@ async def stats(ctx,currentLink, oldLink="",canalID=None):
                 salida+= str(i)+"\n"
             
 
-            await ctx.send("an error ocurrred\n"+tagError+" is not present in the previous session\nmost likely it was formed by another tag\nPrevious session tag list: \n"+salida)
+            await ctx.send("an error ocurred\n"+tagError+" is not present in the previous session\nmost likely it was formed by another tag\nPrevious session tag list: \n"+salida)
             await ctx.send("please insert the country tag that '"+tagError+"' replaces from the above selection")
 
             a= False
@@ -170,12 +196,6 @@ async def stats(ctx,currentLink, oldLink="",canalID=None):
                         await ctx.send("ok")
                         await ctx.send(tagError+" will replace "+str(msg.content))
                         escribeTag(csvAntiguo,msg.content,tagError)
-
-
-                
-                
-
-
 bot.run(TOKEN)
 
 
