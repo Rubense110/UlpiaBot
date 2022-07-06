@@ -12,10 +12,8 @@ TOKEN = os.getenv('DISCORD_TOKEN')
 
 bot = commands.Bot(command_prefix='>')  #bot prefix ej: >save
 
-
-
 # Global section
-apikey = "f9944c9936c1fc48b4d3b57bab261710"
+apikey = ""
 save = ""
 enlace = "https://skanderbeg.pm/api.php?key="+apikey+"&scope=getCountryData&save="+save+"&country=&value=player;total_development;overall_strength;monthly_income;FL;innovativeness;max_manpower;spent_total;provinces;armyStrength;average_monarch;buildings_value;total_mana_spent_on_deving;qualityScore;spent_on_advisors&format=csv&playersOnly=true"
 csvNuevo= ("./data/csv/new.csv")
@@ -27,8 +25,15 @@ def actualizaURL():
     global apikey
     global save
     enlace= "https://skanderbeg.pm/api.php?key="+apikey+"&scope=getCountryData&save="+save+"&country=&value=player;total_development;overall_strength;monthly_income;FL;innovativeness;max_manpower;spent_total;provinces;armyStrength;average_monarch;buildings_value;total_mana_spent_on_deving;qualityScore;spent_on_advisors&format=csv&playersOnly=true"
-# Commands section
+@bot.command(name='dev')
+async def stats(ctx):
+    await ctx.send("developed by Rubense#6711, contact him if something goes wrong! :)")
 
+@bot.command(name='invite')
+async def stats(ctx):
+    await ctx.send("Use this link to add me to your server!\nhttps://discord.com/api/oauth2/authorize?client_id=991088679630028842&permissions=3072&scope=bot")
+
+# Commands section
 @bot.command(name= 'stats') #stats builder
 async def stats(ctx,currentLink, oldLink="",canalID="    1"):
     """
@@ -63,28 +68,31 @@ async def stats(ctx,currentLink, oldLink="",canalID="    1"):
         raise
     try:
         try:
-
-
             hasH1 = False
             hasH2 = False
             link1= requests.get(currentLink)
-            if(str(currentLink).startswith("https://skanderbeg.pm") != True or str(oldLink).startswith("https://skanderbeg.pm") != True):
-                raise Exception("That is no skanderbeg link sir :/")
+            if(str(currentLink).startswith("https://skanderbeg.pm/") != True):
+                raise Exception("That is not a valid skanderbeg link sir :/")
 
             if(oldLink !=""):
+                if(str(oldLink).startswith("https://skanderbeg.pm/") != True):
+                    raise Exception("That is not a valid skanderbeg link sir :/\nRemember that you must specify a second link if you want to introduce a channel ID ")
+
                 link2= requests.get(oldLink)
                 soup2= BeautifulSoup(link2.text, "html.parser")
+
                 if(soup2.title.get_text()== "404 Not Found"):
                     raise Exception("404 Not Found Error on at least 1 Link")
-                if(soup2.h1 != None): hasH1 = True
+
+                hasH1 = True if soup2.h1 != None else False
                 if(hasH1  == True):
                     if(soup2.h1.get_text()== skanderDown):
                         raise Exception(str(soup2.h1).replace("<h1>","").replace("</h1>","").replace("<br/>","\n"))
 
-                if(soup2.h2 != None): hasH2 = True
+                hasH2 = True if soup2.h2 != None else False
                 if(hasH2 == True):
                     if(soup2.h2.get_text().strip()=="No game was set"):
-                        raise Exception("Incorrect save ID, check your skanderberg links")
+                        raise Exception("Incorrect save ID on second link, check your skanderberg links")
 
         except requests.exceptions.RequestException: 
             raise Exception("Error, at least 1 incorrect URL")
@@ -92,28 +100,33 @@ async def stats(ctx,currentLink, oldLink="",canalID="    1"):
         soup= BeautifulSoup(link1.text, "html.parser")
 
         if(bot.get_channel(canal) == None and canalID != "    1"):
-            raise Exception("Invalid discord channel ID")
+            raise Exception("Incorrect discord channel ID")
         elif(soup.title.get_text()== "404 Not Found"):
             raise Exception("404 Not Found Error on at least 1 Link")
 
-       
-        if(soup.h1 != None): hasH1 == True
+        hasH1 = True if soup.h1 != None else False 
         if(hasH1  == True):
             if(soup.h1.get_text()== skanderDown):
                 raise Exception(str(soup.h1).replace("<h1>","").replace("</h1>","").replace("<br/>","\n"))
-        if(soup.h2 != None): hasH2 == True
+
+        hasH2 = True if soup.h2 != None else False
         if(hasH2 == True):
             if(soup.h2.get_text().strip()=="No game was set"):
-                raise Exception("Incorrect save ID, check your skanderberg links")
+                raise Exception("Incorrect save ID on first link check your skanderberg links")
         
-        save= currentLink.split("=")[1]
+        try:
+            save= currentLink.split("=")[1]
+        except:
+            raise Exception("First link is not valid")
         actualizaURL()
         peticion = requests.get(enlace).text
         escribeArchivo(csvNuevo,peticion)
         arreglaCSV(csvNuevo)
         arreglaCSV(csvNuevo)
-
-        if(oldLink!=""): save= oldLink.split("=")[1]
+        try:
+            if(oldLink!=""): save= oldLink.split("=")[1]
+        except:
+            raise Exception("Second link is not valid")
         actualizaURL()
         peticion = requests.get(enlace).text
         escribeArchivo(csvAntiguo,peticion)
@@ -182,7 +195,7 @@ async def stats(ctx,currentLink, oldLink="",canalID="    1"):
                 salida+= str(i)+"\n"
             
 
-            await ctx.send("an error ocurred\n"+tagError+" is not present in the previous session\nmost likely it was formed by another tag\nPrevious session tag list: \n"+salida)
+            await ctx.send("an error ocurred\n"+tagError+" is not present in the previous save\nmost likely it was formed by another tag\nPrevious session tag list: \n"+salida)
             await ctx.send("please insert the country tag that '"+tagError+"' replaces from the above selection")
 
             a= False
@@ -196,6 +209,10 @@ async def stats(ctx,currentLink, oldLink="",canalID="    1"):
                         await ctx.send("ok")
                         await ctx.send(tagError+" will replace "+str(msg.content))
                         escribeTag(csvAntiguo,msg.content,tagError)
+        except Forbidden as e:
+            await ctx.send("I do not have permissions to write in that channel, please retry the command with a valid Channel ID")
+            raise Exception("I do not have permissions to write in that channel, please retry the command with a valid Channel ID")
+
 bot.run(TOKEN)
 
 
