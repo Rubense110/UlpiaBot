@@ -13,7 +13,7 @@ TOKEN = os.getenv('DISCORD_TOKEN')
 bot = commands.Bot(command_prefix='>')  #bot prefix ej: >save
 
 # Global section
-apikey = ""
+apikey = "f9944c9936c1fc48b4d3b57bab261710"
 save = ""
 enlace = "https://skanderbeg.pm/api.php?key="+apikey+"&scope=getCountryData&save="+save+"&country=&value=player;total_development;overall_strength;monthly_income;FL;innovativeness;max_manpower;spent_total;provinces;armyStrength;average_monarch;buildings_value;total_mana_spent_on_deving;qualityScore;spent_on_advisors&format=csv&playersOnly=true"
 csvNuevo= ("./data/csv/new.csv")
@@ -61,6 +61,7 @@ async def stats(ctx,currentLink, oldLink="",canalID="    1"):
     global csvAntiguo
     global csvNuevo
     ctxCommand= ctx
+    await ctx.send("Generating graphs...")
     try:
         canal= int(canalID)
     except Exception as e:
@@ -71,18 +72,15 @@ async def stats(ctx,currentLink, oldLink="",canalID="    1"):
             hasH1 = False
             hasH2 = False
             link1= requests.get(currentLink)
-            if(str(currentLink).startswith("https://skanderbeg.pm/") != True):
+            if(str(currentLink).startswith("https://skanderbeg.pm/browse.php?id=") != True):
                 raise Exception("That is not a valid skanderbeg link sir :/")
 
             if(oldLink !=""):
-                if(str(oldLink).startswith("https://skanderbeg.pm/") != True):
+                if(str(oldLink).startswith("https://skanderbeg.pm/browse.php?id=") != True):
                     raise Exception("That is not a valid skanderbeg link sir :/\nRemember that you must specify a second link if you want to introduce a channel ID ")
 
                 link2= requests.get(oldLink)
                 soup2= BeautifulSoup(link2.text, "html.parser")
-
-                if(soup2.title.get_text()== "404 Not Found"):
-                    raise Exception("404 Not Found Error on at least 1 Link")
 
                 hasH1 = True if soup2.h1 != None else False
                 if(hasH1  == True):
@@ -101,8 +99,6 @@ async def stats(ctx,currentLink, oldLink="",canalID="    1"):
 
         if(bot.get_channel(canal) == None and canalID != "    1"):
             raise Exception("Incorrect discord channel ID")
-        elif(soup.title.get_text()== "404 Not Found"):
-            raise Exception("404 Not Found Error on at least 1 Link")
 
         hasH1 = True if soup.h1 != None else False 
         if(hasH1  == True):
@@ -114,19 +110,14 @@ async def stats(ctx,currentLink, oldLink="",canalID="    1"):
             if(soup.h2.get_text().strip()=="No game was set"):
                 raise Exception("Incorrect save ID on first link check your skanderberg links")
         
-        try:
-            save= currentLink.split("=")[1]
-        except:
-            raise Exception("First link is not valid")
+        save= currentLink.split("=")[1]
         actualizaURL()
         peticion = requests.get(enlace).text
         escribeArchivo(csvNuevo,peticion)
         arreglaCSV(csvNuevo)
         arreglaCSV(csvNuevo)
-        try:
-            if(oldLink!=""): save= oldLink.split("=")[1]
-        except:
-            raise Exception("Second link is not valid")
+
+        if(oldLink!=""): save= oldLink.split("=")[1]
         actualizaURL()
         peticion = requests.get(enlace).text
         escribeArchivo(csvAntiguo,peticion)
@@ -140,7 +131,6 @@ async def stats(ctx,currentLink, oldLink="",canalID="    1"):
     b=False
     while(b==False):
         try:
-            await ctx.send("Generating graphs...")
             calculaStats(csvNuevo,csvAntiguo)
             await ctx.send("Done")
         
@@ -178,9 +168,9 @@ async def stats(ctx,currentLink, oldLink="",canalID="    1"):
             b=True
         except ValueError as e:
             if(len(str(e).split(" ")[0].strip("'"))>3):
-                await ctx.send("Those saves are not related or you did put them in the incorrect order")
+                await ctx.send("Those saves are not related or you did put them in the incorrect order, or you may have chosen the incorrect tag to replace if that was the case")
                 print(e)
-                raise Exception("Those saves are not related or you did put them in the incorrect order")
+                raise Exception
             def check(m):
                 return len(m.content) == 3 and m.content in ls and m.channel == ctx.channel
             tagError= str(e).split(" ")[0].strip("'")
@@ -189,18 +179,21 @@ async def stats(ctx,currentLink, oldLink="",canalID="    1"):
                 ls= listaTags(csvAntiguo)
             except Exception as e:
                 print(e)
-            salida= ""
 
+            salida= ""
             for i in ls:
                 salida+= str(i)+"\n"
             
-
             await ctx.send("an error ocurred\n"+tagError+" is not present in the previous save\nmost likely it was formed by another tag\nPrevious session tag list: \n"+salida)
             await ctx.send("please insert the country tag that '"+tagError+"' replaces from the above selection")
 
             a= False
             while(a==False):
-                msg = await bot.wait_for("message")
+                try:
+                    msg = await bot.wait_for("message",timeout= 30)
+                except:
+                    await ctx.send("time's out, i can't wait all day >.>")
+                    raise
                 if(msg.author == ctxCommand.author):
                     a=check(msg)
                     if(a==False):
@@ -209,12 +202,12 @@ async def stats(ctx,currentLink, oldLink="",canalID="    1"):
                         await ctx.send("ok")
                         await ctx.send(tagError+" will replace "+str(msg.content))
                         escribeTag(csvAntiguo,msg.content,tagError)
+                        await ctx.send("Generating graphs...")
         except Forbidden as e:
             await ctx.send("I do not have permissions to write in that channel, please retry the command with a valid Channel ID")
-            raise Exception("I do not have permissions to write in that channel, please retry the command with a valid Channel ID")
+            raise Exception
 
 bot.run(TOKEN)
-
 
     
     

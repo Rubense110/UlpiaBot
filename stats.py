@@ -112,7 +112,7 @@ def lee_payasetes(fichero):
         
         Payasos= []
         for tag, jugador, desarrolloTotal, fuerzaPais, income, forceLimit, innovacion, manpower, gastoTotal, provincias, fuerzaEjercito, mediaReyes, valorEdificios, clicks, calidad, consejeros, vacio in lector:
-            tag= dictags[tag]
+            tag = dictags[tag] if tag in dictags.keys() else tag
             jugador= jugador.replace(" ","")
             desarrolloTotal= int(desarrolloTotal)
             fuerzaPais = float(fuerzaPais)
@@ -196,7 +196,7 @@ def grafico_dev(payasete, payasete1):
     #//--------//Empezamos a dibujar
     fig, ax1 = plt.subplots()
     #//--------//Grafico de barras horizontales
-    ax1.barh(player, dev, height=1, edgecolor= 'black', color= '#42f5a1',align='center')
+    ax1.barh(player, dev, height=1, edgecolor= 'black', color= '#d1edf2',align='center')
     
     #//--------//Variables para los for 
     b=0
@@ -271,12 +271,13 @@ def grafico_dev(payasete, payasete1):
         a-=1
 
     #//--------//titulo del grafico, textos auxiliares, y malla (descomentar/comentar .grid para activar/desactivar)
+    
     plt.title('Desarrollo Total', fontsize= 30, fontweight='bold', color='Black')
     plt.text(TextVar, len(ytick), 'Variación', fontweight='bold', color= 'Black', fontsize= 20)
     ax1.grid(True, color='Gray',linestyle=':', linewidth=0.5)
     ax1.set_xlim(right=max(dev))
     plt.subplots_adjust(left=0.2,bottom=0.03, right=0.55,top=0.95)
-    plt.savefig('./data/graphs/dev.png')
+    plt.savefig('./data/graphs/dev.png',bbox_inches='tight')
     #print (datosPos)
 """
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -347,7 +348,7 @@ def grafico_OverStrenght(payasete, payasete1):
     #//--------//Empezamos a dibujar
     fig, ax1 = plt.subplots()
     #//--------//Grafico de barras horizontales
-    ax1.barh(player, dev, height=1, edgecolor= 'black', color= '#42f5a1',align='center')
+    ax1.barh(player, dev, height=1, edgecolor= 'black', color= '#d1edf2',align='center')
     
     #//--------//Variables para los for 
     b=0
@@ -500,7 +501,7 @@ def grafico_income(payasete, payasete1):
     #//--------//Empezamos a dibujar
     fig, ax1 = plt.subplots()
     #//--------//Grafico de barras horizontales
-    ax1.barh(player, dev, height=1, edgecolor= 'black', color= '#42f5a1',align='center')
+    ax1.barh(player, dev, height=1, edgecolor= 'black', color= '#d1edf2',align='center')
     
     #//--------//Variables para los for 
     b=0
@@ -651,7 +652,7 @@ def grafico_FL(payasete, payasete1):
     #//--------//Empezamos a dibujar
     fig, ax1 = plt.subplots()
     #//--------//Grafico de barras horizontales
-    ax1.barh(player, dev, height=1, edgecolor= 'black', color= '#42f5a1',align='center')
+    ax1.barh(player, dev, height=1, edgecolor= 'black', color= '#d1edf2',align='center')
     
     #//--------//Variables para los for 
     b=0
@@ -803,7 +804,7 @@ def grafico_innovacion(payasete, payasete1):
     #//--------//Empezamos a dibujar
     fig, ax1 = plt.subplots()
     #//--------//Grafico de barras horizontales
-    ax1.barh(player, dev, height=1, edgecolor= 'black', color= '#42f5a1',align='center')
+    ax1.barh(player, dev, height=1, edgecolor= 'black', color= '#d1edf2',align='center')
     
     #//--------//Variables para los for 
     b=0
@@ -956,7 +957,7 @@ def grafico_manpower(payasete, payasete1):
     #//--------//Empezamos a dibujar
     fig, ax1 = plt.subplots()
     #//--------//Grafico de barras horizontales
-    ax1.barh(player, dev, height=1, edgecolor= 'black', color= '#42f5a1',align='center')
+    ax1.barh(player, dev, height=1, edgecolor= 'black', color= '#d1edf2',align='center')
     
     #//--------//Variables para los for 
     b=0
@@ -1108,7 +1109,7 @@ def grafico_gastos(payasete, payasete1):
     #//--------//Empezamos a dibujar
     fig, ax1 = plt.subplots()
     #//--------//Grafico de barras horizontales
-    ax1.barh(player, dev, height=1, edgecolor= 'black', color= '#42f5a1',align='center')
+    ax1.barh(player, dev, height=1, edgecolor= 'black', color= '#d1edf2',align='center')
     
     #//--------//Variables para los for 
     b=0
@@ -1260,7 +1261,7 @@ def grafico_provincias(payasete, payasete1):
     #//--------//Empezamos a dibujar
     fig, ax1 = plt.subplots()
     #//--------//Grafico de barras horizontales
-    ax1.barh(player, dev, height=1, edgecolor= 'black', color= '#42f5a1',align='center')
+    ax1.barh(player, dev, height=1, edgecolor= 'black', color= '#d1edf2',align='center')
     
     #//--------//Variables para los for 
     b=0
@@ -1412,7 +1413,7 @@ def grafico_army(payasete, payasete1):
     #//--------//Empezamos a dibujar
     fig, ax1 = plt.subplots()
     #//--------//Grafico de barras horizontales
-    ax1.barh(player, dev, height=1, edgecolor= 'black', color= '#42f5a1',align='center')
+    ax1.barh(player, dev, height=1, edgecolor= 'black', color= '#d1edf2',align='center')
     
     #//--------//Variables para los for 
     b=0
@@ -1564,7 +1565,7 @@ def grafico_rey(payasete, payasete1):
     #//--------//Empezamos a dibujar
     fig, ax1 = plt.subplots()
     #//--------//Grafico de barras horizontales
-    ax1.barh(player, dev, height=1, edgecolor= 'black', color= '#42f5a1',align='center')
+    ax1.barh(player, dev, height=1, edgecolor= 'black', color= '#d1edf2',align='center')
     
     #//--------//Variables para los for 
     b=0
@@ -1716,7 +1717,7 @@ def grafico_edificios(payasete, payasete1):
     #//--------//Empezamos a dibujar
     fig, ax1 = plt.subplots()
     #//--------//Grafico de barras horizontales
-    ax1.barh(player, dev, height=1, edgecolor= 'black', color= '#42f5a1',align='center')
+    ax1.barh(player, dev, height=1, edgecolor= 'black', color= '#d1edf2',align='center')
     
     #//--------//Variables para los for 
     b=0
@@ -1867,7 +1868,7 @@ def grafico_clicks1(payasete, payasete1):
     #//--------//Empezamos a dibujar
     fig, ax1 = plt.subplots()
     #//--------//Grafico de barras horizontales
-    ax1.barh(player, dev, height=1, edgecolor= 'black', color= '#42f5a1',align='center')
+    ax1.barh(player, dev, height=1, edgecolor= 'black', color= '#d1edf2',align='center')
     
     #//--------//Variables para los for 
     b=0
@@ -2019,7 +2020,7 @@ def grafico_calidad(payasete, payasete1):
     #//--------//Empezamos a dibujar
     fig, ax1 = plt.subplots()
     #//--------//Grafico de barras horizontales
-    ax1.barh(player, dev, height=1, edgecolor= 'black', color= '#42f5a1',align='center')
+    ax1.barh(player, dev, height=1, edgecolor= 'black', color= '#d1edf2',align='center')
     
     #//--------//Variables para los for 
     b=0
@@ -2172,7 +2173,7 @@ def grafico_consejeros(payasete, payasete1):
     #//--------//Empezamos a dibujar
     fig, ax1 = plt.subplots()
     #//--------//Grafico de barras horizontales
-    ax1.barh(player, dev, height=1, edgecolor= 'black', color= '#42f5a1',align='center')
+    ax1.barh(player, dev, height=1, edgecolor= 'black', color= '#d1edf2',align='center')
     
     #//--------//Variables para los for 
     b=0
