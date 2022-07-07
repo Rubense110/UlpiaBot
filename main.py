@@ -15,7 +15,7 @@ bot = commands.Bot(command_prefix='>',help_command=None,activity= Game(name=">he
 bot.remove_command('help')
 
 # Global section
-apikey = "f9944c9936c1fc48b4d3b57bab261710"
+apikey = "place_your_skanderbeg_api_key_here"
 save = ""
 enlace = "https://skanderbeg.pm/api.php?key="+apikey+"&scope=getCountryData&save="+save+"&country=&value=player;total_development;overall_strength;monthly_income;FL;innovativeness;max_manpower;spent_total;provinces;armyStrength;average_monarch;buildings_value;total_mana_spent_on_deving;qualityScore;spent_on_advisors&format=csv&playersOnly=true"
 csvNuevo= ("./data/csv/new.csv")
@@ -61,7 +61,7 @@ async def help(ctx):
     """,
     inline=False)
     embed.add_field(name = "Add me to your server!",value = "https://bit.ly/3P92CZl",inline=True)
-    embed.add_field(name = "developed by Rubense#6711",value="contact him if something goes wrong!",inline=True)
+    embed.add_field(name = "Developed by Rubense#6711",value="contact him if something goes wrong!",inline=True)
 
     await ctx.send(embed=embed)
 
@@ -163,7 +163,7 @@ async def stats(ctx,currentLink, oldLink="",canalID="    1"):
     while(b==False):
         try:
             calculaStats(csvNuevo,csvAntiguo)
-            await ctx.send(embed=Embed(tittle="Done"))
+            await ctx.send(embed=Embed(title="Done",colour=Color.blue()))
         
         
             plt.close("all")
