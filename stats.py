@@ -1,11 +1,16 @@
 import csv
 from collections import  namedtuple
 from dataclasses import replace
+from fileinput import filename
+from itertools import pairwise
 from modulefinder import replacePackageMap
 from unittest.mock import CallableMixin
+from matplotlib.cbook import ls_mapper
 import matplotlib.pyplot as plt
 import matplotlib as mat
 from posixpath import split
+import requests
+from requests import request
 
 def escribeArchivo(file,peticion):
     '''
@@ -22,7 +27,7 @@ def arreglaCSV(csv):
         -- when the buildings value is zero it is returned as nothing, resulting in a missing "0" element in that country, which is inserted here
         -- sometimes skanderbeg does not know the player of a certain country despite being labeled as a player country, resulting in the "player"
            element being missing, which is solved labeling that player as "undefined"
-        -- when a country forms another one it must be specified by the user, this is solved in main.py and not here
+        -- when a country forms another one it must be specified by the user, as this means that cosuntry does not exists in the old data
     '''
 
     file= open (csv, "r")
@@ -46,8 +51,29 @@ def arreglaCSV(csv):
                 replacement+=cambios+"\n"
         else:
             replacement+=line+"\n"
+
     file.close()
     fout= open (csv, "w+")
+    fout.write(replacement)
+    fout.close()
+
+def arreglaPlayers(csvNew,csvOld):
+    fileNew= open(csvNew,"r")
+    fileOld= open(csvOld,"r")
+    replacement=""
+    ls= list(i for i in fileNew)
+    ls2=list(i for i in fileOld)
+    for line in ls:
+        for line2 in ls2:
+            linealista=line.split(",")
+            linealista2=line2.split(",")
+            if(linealista[0] == linealista2[0]):
+                linealista2[1] = linealista[1]
+                cambios =",".join(linealista2)
+                replacement+=cambios
+    fileNew.close()
+    fileOld.close()
+    fout=open (csvOld, "w+")
     fout.write(replacement)
     fout.close()
 
@@ -62,22 +88,51 @@ def listaTags(csv):
         res.append(tag)
     return res
     
-def escribeTag(csv,tag,tagSustituto):
-    '''
-    replaces the tag (first element) element of a certain row in the given csv file by the element tagSustituto
-    '''
-    file= open (csv, "r")
-    replacement= ""
+def escribeTag(csv,tagFormador,formable,apikey,save):
+    enlace = "https://skanderbeg.pm/api.php?key="+apikey+"&scope=getCountryData&save="+save+"&country="+tagFormador+"&value=player;total_development;overall_strength;monthly_income;FL;innovativeness;max_manpower;spent_total;provinces;armyStrength;average_monarch;buildings_value;total_mana_spent_on_deving;qualityScore;spent_on_advisors&format=csv"
+    peticion = requests.get(enlace).text
+    file= open(csv, "r")
+    replacement=""
     for line in file:
         linealista=line.split(",")
-        if(linealista[0]==tag):
-            linealista[0] = tagSustituto
-        replacement+= ",".join(linealista)
+        if(linealista[0] == formable):
+            peticion2= peticion.split(",")
+            peticion2[0] = formable
+            peticionUpdated= ",".join(peticion2)
+            replacement += peticionUpdated
+        else:
+            replacement+=",".join(linealista)              
     file.close()
     fout= open (csv, "w+")
     fout.write(replacement)
     fout.close()
 
+def copiaTag(csvNew,csvOld,tag):
+    file= open(csvNew, "r")
+    lineaTag=""
+    replacement=""
+    
+    for line in file:
+        linealista= line.split(",")
+        if(linealista[0] == tag):
+            lineaTag= ",".join(linealista)
+    file.close()
+    
+    file2= open(csvOld,"r")
+    for line in file2:
+        linealista = line.split(",")
+        if(linealista[0] == tag):
+            print("if")
+            cambios=lineaTag
+            replacement+=cambios
+        else:
+            cambios= ",".join(linealista)
+            replacement+=cambios
+    print(replacement)
+    file2.close
+    fout= open (csvOld, "w+")
+    fout.write(replacement)
+    fout.close()
 
 def parsea(File):
     '''
