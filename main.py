@@ -32,7 +32,7 @@ def actualizaURL():
     global save
     enlace= "https://skanderbeg.pm/api.php?key="+apikey+"&scope=getCountryData&save="+save+"&country="+paises+"&value=player;total_development;overall_strength;monthly_income;FL;innovativeness;max_manpower;spent_total;provinces;armyStrength;average_monarch;buildings_value;total_mana_spent_on_deving;qualityScore;spent_on_advisors&format=csv"+ia
 embedError= Embed(title="Error",colour=Color.blue())
-
+genericError ="Unknown Error. Possible causes: \n->the skanderbeg links aren't from the same game\n->you wrote the links backwards\n->you entered the wrong tag, if that was the case\n->you set a non colonial nation as a colony ('C')\n\n Please if you are having this error and dont know why, contact me on discord (Rubense#6711) for further detail"
 
 @bot.command()
 async def help(ctx):
@@ -61,7 +61,7 @@ async def help(ctx):
 
     -it only requires the current game session link to work but no  difference between that game and the previous session will be displayed 
 
-    -only works for mp links
+    -oly collects data from player countries
     """,
     inline=False)
     embed.add_field(name = "Add me to your server!",value = "https://bit.ly/3P92CZl",inline=True)
@@ -184,125 +184,75 @@ async def stats(ctx,currentLink, oldLink="",canalID="    1"):
             await ctx.send(embed=Embed(title="Done",colour=Color.blue()))
             plt.close("all")
             channel= bot.get_channel(canal)
-            
-            if(canalID=="    1"):
-                await ctx.send(file=File('./data/graphs/dev.png')) 
-                await ctx.send(file=File('./data/graphs/clicks.png'))
-                await ctx.send(file=File('./data/graphs/fuerzaPais.png'))
-                await ctx.send(file=File('./data/graphs/income.png'))
-                await ctx.send(file=File('./data/graphs/FL.png'))
-                await ctx.send(file=File('./data/graphs/innovacion.png'))
-                await ctx.send(file=File('./data/graphs/gastos.png'))
-                await ctx.send(file=File('./data/graphs/provincias.png'))
-                await ctx.send(file=File('./data/graphs/fuerzaEjercito.png'))
-                await ctx.send(file=File('./data/graphs/avg_monarch.png'))
-                await ctx.send(file=File('./data/graphs/valor_edificios.png'))
-                await ctx.send(file=File('./data/graphs/calidad.png'))
-                await ctx.send(file=File('./data/graphs/consejeros.png'))
-                
-            else:
-                await channel.send(file=File('./data/graphs/dev.png')) 
-                await channel.send(file=File('./data/graphs/clicks.png'))
-                await channel.send(file=File('./data/graphs/fuerzaPais.png'))
-                await channel.send(file=File('./data/graphs/income.png'))
-                await channel.send(file=File('./data/graphs/FL.png'))
-                await channel.send(file=File('./data/graphs/innovacion.png'))
-                await channel.send(file=File('./data/graphs/gastos.png'))
-                await channel.send(file=File('./data/graphs/provincias.png'))
-                await channel.send(file=File('./data/graphs/fuerzaEjercito.png'))
-                await channel.send(file=File('./data/graphs/avg_monarch.png'))
-                await channel.send(file=File('./data/graphs/valor_edificios.png'))
-                await channel.send(file=File('./data/graphs/calidad.png'))
-                await channel.send(file=File('./data/graphs/consejeros.png'))
-            b=True
+            listaFotos=["dev","clicks","fuerzaPais","income","FL","innovacion","gastos","provincias","fuerzaEjercito","avg_monarch","valor_edificios","calidad","consejeros"]
+            [await ctx.send(file=File('./data/graphs/'+i+'.png')) for i in listaFotos];b=True if canalID=="    1" else [await channel.send(file=File('./data/graphs/'+i+'.png')) for i in listaFotos];b=True
 
         except ValueError as e:
             
             def check(m):
                 return m.channel == ctx.channel and str(m.content).isupper() and len(m.content) == 3 or m.content == "C"
             
-
+            
             if(str(e).strip().startswith("not enough values to unpack") == True):
                 print(type(e).__name__, e)
                 res= open(csvAntiguo,"r")
-                with open(csvAntiguo, 'r') as res:
-                    for line in res:
-                        print(line)
-                        line= line.strip()
-                        cadena= line.split(",")
-                        print()
-                        if(line == ""):
-                            print("vacio")
-                            pass 
-                        elif(len(cadena)==17):
-                            print("17")
-                            pass
-                        elif(cadena[2]=="0"):
-                            print("elif")
-                            embedError.description=cadena[0]+" is not present in the previous save\nmost likely it was formed by another tag \n Please insert the tag that formed "+cadena[0]+"\n if this is a colony or you are having problems with this enter 'C' instead of the tag"
-                            await ctx.send(embed=embedError)
-                            a=False
-                            while(a== False):
-                                try:        
-                                    msg= await bot.wait_for("message",timeout= 30)
-                                except:
-                                    embedError.description="time's out, i can't wait all day >.>"
+                ls= list(i for i in res)
+                for line in ls:
+                    line= line.strip()
+                    cadena= line.split(",")
+                    if(line == ""):
+                        pass 
+                    elif(len(cadena)==17):
+                        pass
+                    elif(cadena[2]=="0"):
+                        embedError.description=cadena[0]+" is not present in the previous save\nmost likely it was formed by another tag \n Please insert the tag that formed "+cadena[0]+"\n if this is a colony or you are having problems with this enter 'C' instead of the tag"
+                        await ctx.send(embed=embedError)
+                        a=False
+                        while(a== False):
+                            try:        
+                                msg= await bot.wait_for("message",timeout= 30)
+                            except:
+                                embedError.description="time's out, i can't wait all day >.>"
+                                await ctx.send(embed=embedError)
+                                raise
+
+                            if(msg.author == ctxCommand.author):
+                                a= check(msg)
+                                if(a==False):
+                                    embedError.description="please insert a valid tag or 'C' for newly formed colonies"
                                     await ctx.send(embed=embedError)
-                                    raise
-
-                                if(msg.author == ctxCommand.author):
-                                    a= check(msg)
-                                    if(a==False):
-                                        embedError.description="please insert a valid tag or 'C' for newly formed colonies"
-                                        await ctx.send(embed=embedError)
+                                else:
+                                    if(msg.content == "C"):
+                                        copiaTag(csvNuevo,csvAntiguo,cadena[0])
                                     else:
-                                        if(msg.content == "C"):
-                                            copiaTag(csvNuevo,csvAntiguo,cadena[0])
-                                        else:
-                                            try:
-                                                escribeTag(csvAntiguo,msg.content,cadena[0],apikey,save)
-                                                arreglaPlayers(csvNuevo,csvAntiguo)
-                                                await ctx.send(embed=Embed(title="Generating graphs...",colour=Color.blue()))
+                                        try:
+                                            escribeTag(csvAntiguo,msg.content,cadena[0],apikey,save)
+                                            arreglaPlayers(csvNuevo,csvAntiguo)
+                                            await ctx.send(embed=Embed(title="Generating graphs...",colour=Color.blue()))
 
-                                            except Exception as e:
-                                                embedError.description="unknown error2"
-                                                await ctx.send(embed=embedError)
-                                                raise
-                        else:
-                            print("else")
-                            embedError.description="unknown error"
-                            await ctx.send(embed=embedError)
-                            raise
-                        
-            elif(len(str(e).split(" ")[0].strip("'"))>3):
-                embedError.description="Those saves are not related or you did put them in the incorrect order, or you may have chosen the incorrect tag to replace if that was the case"
-                await ctx.send(embed= embedError)
-                raise
+                                        except Exception as e:
+                                            embedError.description=genericError
+                                            await ctx.send(embed=embedError)
+                                            raise
+                    else:
+                        embedError.description=genericError
+                        await ctx.send(embed=embedError)
+                        raise
             else:
-                embedError.description="unknown error1"
+                embedError.description=genericError
                 await ctx.send(embed=embedError)
                 b=True
                 raise  
             
+
         except Forbidden as e:
             embedError.description="I do not have permissions to write in that channel, please retry the command with a valid Channel ID"
             await ctx.send(embed=embedError)
             raise 
+        
         except Exception as e:
             #print(type(e).__name__, e)
 
             raise
 
 bot.run(TOKEN)
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-
