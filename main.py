@@ -13,7 +13,8 @@ import requests
 load_dotenv()                           #bot token
 TOKEN = os.getenv('DISCORD_TOKEN')
 
-bot = commands.Bot(command_prefix='>',help_command=None,activity= Game(name=">help"))  #bot prefix ej: >save
+bot = commands.Bot(intents=Intents.all(),command_prefix='>',help_command=None,activity= Game(name=">help"))  #bot prefix ej: >save
+
 bot.remove_command('help')
 
 # Global section
