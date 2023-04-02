@@ -7,8 +7,6 @@ from conf import *
 from aux_funcs import *
 
 
-
-Payaso= namedtuple("tag", "tag, jugador, desarrolloTotal, fuerzaPais, income, forceLimit, innovacion, manpower, gastoTotal, provincias, fuerzaEjercito, mediaReyes, valorEdificios, clicks, calidad, consejeros,vacio")
 countries = TAGS
 dictags= parsea(countries)
 csv = NEW_CSV
