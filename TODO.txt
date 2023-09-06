@@ -1,0 +1,7 @@
+ DONE:
+    - reestructured all data management to pandas
+ TODO:
+    - Map Enhancement
+    - fix undefined on player slot
+    - improve/enhance csv fixes from old version
+    - improve code readeability

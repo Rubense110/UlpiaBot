@@ -6,7 +6,7 @@ PATH = os.path.join(os.path.abspath("."),"bot-v2")
 
 TAGS = os.path.join(PATH,"data","00_countries.txt")
 GRAPHS = os.path.join(PATH,"graphs")
-CSV  = os.path.join(PATH,"data","csv")
+CSV  = os.path.join(os.path.abspath("."),"data","csv")
 
 OLD_CSV = os.path.join(CSV,"old.csv")
 NEW_CSV = os.path.join(CSV,"new.csv")

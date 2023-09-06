@@ -1,26 +1,22 @@
-from ast import Await, While
-from http.client import InvalidURL
 import os
-from tkinter import PROJECTING, W
 from discord.ext import commands
 from discord import *
 from dotenv import load_dotenv
-from matplotlib.pyplot import title
 from stats import *
 from bs4 import BeautifulSoup
 import sys    
 sys.path.append("bot-v2\scr")
 import stats_v2
 
-load_dotenv()                           #bot token
+
+#Bot token section
+load_dotenv()                           
 TOKEN = os.getenv('DISCORD_TOKEN')
-
 bot = commands.Bot(intents=Intents.all(),command_prefix='>',help_command=None,activity= Game(name=">help"))  #bot prefix ej: >save
-
 bot.remove_command('help')
 
 # Global section
-apikey = "f9944c9936c1fc48b4d3b57bab261710"
+apikey = os.getenv("API_KEY")
 save = ""
 ia= "&playersOnly=true"
 enlace = "https://skanderbeg.pm/api.php?key="+apikey+"&scope=getCountryData&save="+save+"&country=&value=player;total_development;overall_strength;monthly_income;FL;innovativeness;max_manpower;spent_total;provinces;armyStrength;average_monarch;buildings_value;total_mana_spent_on_deving;qualityScore;spent_on_advisors&format=csv&playersOnly=true"
@@ -183,6 +179,7 @@ async def stats(ctx,currentLink, oldLink="",canalID="    1"):
     b=False
     while(b==False):
         try:
+            stats_v2.initialize_data()
             stats_v2.create_stats()
             await ctx.send(embed=Embed(title="Done",colour=Color.blue()))
             plt.close("all")
@@ -194,13 +191,14 @@ async def stats(ctx,currentLink, oldLink="",canalID="    1"):
             b=True if canalID=="    1" else [await channel.send(file=File('./data/graphs/'+i+'.png')) 
                                              for i in listaFotos];b=True
 
-        except ValueError as e:
+        except TypeError as e:
             
             def check(m):
                 return m.channel == ctx.channel and str(m.content).isupper() and len(m.content) == 3 or m.content == "C"
             
             
-            if(str(e).strip().startswith("not enough values to unpack") == True):
+            if(str(e).strip().startswith("not enough values to unpack") == True or
+               str(e).strip().startswith("'float' object is not iterable")):
                 print(type(e).__name__, e)
                 res= open(csvAntiguo,"r")
                 ls= list(i for i in res)
@@ -234,7 +232,7 @@ async def stats(ctx,currentLink, oldLink="",canalID="    1"):
                                     else:
                                         try:
                                             escribeTag(csvAntiguo,msg.content,cadena[0],apikey,save)
-                                            arreglaPlayers(csvNuevo,csvAntiguo)
+                                            arreglaPlayers2(csvNuevo,csvAntiguo)
                                             await ctx.send(embed=Embed(title="Generating graphs...",colour=Color.blue()))
 
                                         except Exception as e:

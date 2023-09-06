@@ -45,6 +45,10 @@ def arreglaCSV(csv):
                 cambios+="\n"
                 replacement+=cambios
                 i+=1 
+            elif("." not in cadena[6]):
+                cadena.insert(6,"0")
+                cambios= ",".join(cadena)
+                replacement+=cambios+"\n"
             else:
                 cadena.insert(12,"0")
                 cambios= ",".join(cadena)
@@ -71,6 +75,36 @@ def arreglaPlayers(csvNew,csvOld):
                 linealista2[1] = linealista[1]
                 cambios =",".join(linealista2)
                 replacement+=cambios
+    fileNew.close()
+    fileOld.close()
+    fout=open (csvOld, "w+")
+    fout.write(replacement)
+    fout.close()
+
+def arreglaPlayers2(csvNew,csvOld):
+    fileNew= open(csvNew,"r")
+    fileOld= open(csvOld,"r")
+
+    replacement=""
+    ls= list(i for i in fileNew)
+    ls2=list(i for i in fileOld)
+    for line in ls:
+        for line2 in ls2:
+            print("old - ",line2)
+            linealista=line.split(",")
+            linealista2=line2.split(",")
+            print("linealista2 - ",linealista2)
+            print("linealista1 - ", linealista)
+            if(linealista[0] == linealista2[0]):
+                try: 
+                    if(isinstance(int(linealista2[1]), int)): linealista2.insert(1, "abutarda")
+                except Exception as e: print("Tag Formation Error: ", e)
+                finally: 
+
+                    print(linealista2[1], linealista[1],"\n", type(linealista2[1]),type(linealista[1]))
+                    linealista2[1] = linealista[1]
+                    cambios =",".join(linealista2)
+                    replacement+=cambios
     fileNew.close()
     fileOld.close()
     fout=open (csvOld, "w+")

@@ -4,14 +4,32 @@ import pandas as pd
 from aux_funcs import *
 from conf import *
 
-dictags= parsea(TAGS)
-csv_values = ["tag", "jugador", "desarrolloTotal", "fuerzaPais", "income", "forceLimit",
-              "innovacion", "manpower", "gastoTotal", "provincias", "fuerzaEjercito", 
-              "mediaReyes", "valorEdificios", "clicks", "calidad", "consejeros","vacio"]
+dictags = {}
+csv_values, stat_names = [], []
+old, new = pd.DataFrame(), pd.DataFrame()
+tags, players = pd.Series(), pd.Series()
 
-stat_names = ["Total Development", "Country Strength", "Income", "Force Limit",
-              "Innovativeness", "Manpower", "Total Expenses", "Provinces", "Army Strength",
-              "Avg Monarch", "Buildings Value", "Dev Clicks", "Quality", "Spent on Advisors"]
+def initialize_data():
+    global dictags, csv_values, stat_names, old, new, tags, players
+
+
+    dictags= parsea(TAGS)
+    csv_values = ["tag", "jugador", "desarrolloTotal", "fuerzaPais", "income", "forceLimit",
+                "innovacion", "manpower", "gastoTotal", "provincias", "fuerzaEjercito", 
+                "mediaReyes", "valorEdificios", "clicks", "calidad", "consejeros","vacio"]
+
+    stat_names = ["Total Development", "Country Strength", "Income", "Force Limit",
+                "Innovativeness", "Manpower", "Total Expenses", "Provinces", "Army Strength",
+                "Avg Monarch", "Buildings Value", "Dev Clicks", "Quality", "Spent on Advisors"]
+    
+    old = create_dataframe(OLD_CSV)
+    new = create_dataframe(NEW_CSV)
+
+    tags = new["tag"]
+    players = new["jugador"]
+
+
+
 
 def create_dataframe(csv):
     df = pd.read_csv(csv, encoding="utf-8",names=csv_values)
@@ -21,11 +39,8 @@ def create_dataframe(csv):
     df["mediaReyes"] = [sum(val) for val in df["mediaReyes"]]
     return df
 
-old = create_dataframe(OLD_CSV)
-new = create_dataframe(NEW_CSV)
 
-tags = new["tag"]
-players = new["jugador"]
+
 
 def diff_dataframes():
     
@@ -46,7 +61,7 @@ def diff_dataframes():
 
     return df_diff
 
-def flechitas(data_old, data_new, col, order): 
+def flechitas(data_old, data_new, order): 
         
         res = []
         
@@ -89,7 +104,6 @@ def create_stats():
         
         #  -------------------
 
-        country_count, diff_index = 0, 0
         num_players = len(data["jugador"])
         xtick= ax1.get_xticks()
         ytick= ax1.get_yticks()
@@ -102,7 +116,7 @@ def create_stats():
         tag = list(data["tag"])
         TextNumIzq= data[col].max() + int(xtick[1])+1
         old_data = old.loc[:, [col, "tag", "jugador"]].sort_values(by= col)
-        color_flecha = list(reversed(flechitas(list(old_data["tag"]), list(data["tag"]), col, order)))
+        color_flecha = list(reversed(flechitas(list(old_data["tag"]), list(data["tag"]), order)))
         data_new = list(data[col])
 
         #  -------------------    
@@ -111,18 +125,16 @@ def create_stats():
         
         #//-------- Data
             plt.text(i.get_width()-i.get_width() +1 ,i.get_y(),
-            round(data_new[country_count]), fontweight= 'bold', color= 'Black')
+            round(data_new[ax1.patches.index(i)]), fontweight= 'bold', color= 'Black')
             
         #//-------- Variacion
-            if (local_diff[diff_index] > 0 ):
+            if (local_diff[ax1.patches.index(i)] > 0 ):
                 plt.text(i.get_width()-i.get_width()+ TextVar,i.get_y(),
-                round(local_diff[diff_index],1), fontweight= 'bold', color= 'Green',va="bottom")
-                diff_index+=1
+                round(local_diff[ax1.patches.index(i)],1), fontweight= 'bold', color= 'Green',va="bottom")
 
             else:
                 plt.text(i.get_width()-i.get_width()+ TextVar,i.get_y(),
-                round(local_diff[diff_index],1), fontweight= 'bold', color= 'Red',va="bottom")
-                diff_index+=1
+                round(local_diff[ax1.patches.index(i)],1), fontweight= 'bold', color= 'Red',va="bottom")
                         
         #//-------- Flechas
 
@@ -144,8 +156,8 @@ def create_stats():
         #//-------- Nombres de los paises
 
             plt.text(i.get_width()-i.get_width()- maxName,i.get_y(),
-            tag[country_count],va="bottom")
-            country_count+=1
+            tag[ax1.patches.index(i)],va="bottom")
+    
 
         plt.title(stat_names[diff_fixed.columns.get_loc(col)], fontsize= 30, fontweight='bold', color='Black')
         plt.text(TextVar, len(ytick), 'Variation', fontweight='bold', color= 'Black', fontsize= 20)
