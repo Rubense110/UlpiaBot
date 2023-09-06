@@ -8,7 +8,9 @@ from dotenv import load_dotenv
 from matplotlib.pyplot import title
 from stats import *
 from bs4 import BeautifulSoup
-import requests
+import sys    
+sys.path.append("bot-v2\scr")
+import stats_v2
 
 load_dotenv()                           #bot token
 TOKEN = os.getenv('DISCORD_TOKEN')
@@ -181,12 +183,16 @@ async def stats(ctx,currentLink, oldLink="",canalID="    1"):
     b=False
     while(b==False):
         try:
-            calculaStats(csvNuevo,csvAntiguo)
+            stats_v2.create_stats()
             await ctx.send(embed=Embed(title="Done",colour=Color.blue()))
             plt.close("all")
             channel= bot.get_channel(canal)
-            listaFotos=["dev","clicks","fuerzaPais","income","FL","innovacion","gastos","provincias","fuerzaEjercito","avg_monarch","valor_edificios","calidad","consejeros"]
-            [await ctx.send(file=File('./data/graphs/'+i+'.png')) for i in listaFotos];b=True if canalID=="    1" else [await channel.send(file=File('./data/graphs/'+i+'.png')) for i in listaFotos];b=True
+            listaFotos=["desarrolloTotal", "fuerzaPais", "income", "forceLimit",
+              "innovacion", "manpower", "gastoTotal", "provincias", "fuerzaEjercito", 
+              "mediaReyes", "valorEdificios", "clicks", "calidad", "consejeros"]
+            [await ctx.send(file=File('./data/graphs/'+i+'.png')) for i in listaFotos];
+            b=True if canalID=="    1" else [await channel.send(file=File('./data/graphs/'+i+'.png')) 
+                                             for i in listaFotos];b=True
 
         except ValueError as e:
             
