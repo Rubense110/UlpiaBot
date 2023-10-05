@@ -7,11 +7,10 @@ from conf import *
 dictags = {}
 csv_values, stat_names = [], []
 old, new = pd.DataFrame(), pd.DataFrame()
-tags, players = pd.Series(), pd.Series()
+tags, players = pd.Series(dtype=object), pd.Series(dtype=object)
 
 def initialize_data():
     global dictags, csv_values, stat_names, old, new, tags, players
-
 
     dictags= parsea(TAGS)
     csv_values = ["tag", "jugador", "desarrolloTotal", "fuerzaPais", "income", "forceLimit",
@@ -38,7 +37,6 @@ def create_dataframe(csv):
     df['mediaReyes'] = df['mediaReyes'].str.split("<br>").str[1].str.split('/').apply(lambda x: [float(i) for i in x]).tolist()
     df["mediaReyes"] = [sum(val) for val in df["mediaReyes"]]
     return df
-
 
 
 
@@ -82,11 +80,11 @@ def flechitas(data_old, data_new, order):
         return res
 
 def create_stats():
- 
+    
     diff = diff_dataframes()   
     diff_fixed = diff.iloc[:,2:]
     
-    
+    #print(diff_fixed)
     for col , _ in diff_fixed.items():
 
         data = new
@@ -118,54 +116,57 @@ def create_stats():
         old_data = old.loc[:, [col, "tag", "jugador"]].sort_values(by= col)
         color_flecha = list(reversed(flechitas(list(old_data["tag"]), list(data["tag"]), order)))
         data_new = list(data[col])
+        vert_diff = len(xtick)*0.015
 
         #  -------------------    
         
         for i in ax1.patches:
-        
-        #//-------- Data
-            plt.text(i.get_width()-i.get_width() +1 ,i.get_y(),
+
+
+        #//-------- Data ticks_y[i] + (ticks_y[1] - ticks_y[0]) / 2
+            plt.text((xtick[1]-xtick[0])/6 ,ytick[ax1.patches.index(i)]-vert_diff,
             round(data_new[ax1.patches.index(i)]), fontweight= 'bold', color= 'Black')
             
         #//-------- Variacion
             if (local_diff[ax1.patches.index(i)] > 0 ):
-                plt.text(i.get_width()-i.get_width()+ TextVar,i.get_y(),
+                plt.text(i.get_width()-i.get_width()+ TextVar,ytick[ax1.patches.index(i)]-vert_diff,
                 round(local_diff[ax1.patches.index(i)],1), fontweight= 'bold', color= 'Green',va="bottom")
 
             else:
-                plt.text(i.get_width()-i.get_width()+ TextVar,i.get_y(),
+                plt.text(i.get_width()-i.get_width()+ TextVar,ytick[ax1.patches.index(i)]-vert_diff,
                 round(local_diff[ax1.patches.index(i)],1), fontweight= 'bold', color= 'Red',va="bottom")
                         
         #//-------- Flechas
 
             color = "Green" if color_flecha[ax1.patches.index(i)] == "↑" else "Red" if color_flecha[ax1.patches.index(i)] == "↓" else "#705d00"
-            plt.text(i.get_width()-i.get_width() - maxName - xtick[1]/2.5,i.get_y(),
+            plt.text(i.get_width()-i.get_width() - maxName - xtick[1]/2.5,ytick[ax1.patches.index(i)]-vert_diff,
             color_flecha[ax1.patches.index(i)], fontweight= '1000', color= color,va="bottom")
             
 
         #//-------- Numeritos
 
-            plt.text(i.get_width()-i.get_width()+ TextNumIzq,i.get_y(),
+            plt.text(i.get_width()-i.get_width()+ TextNumIzq,ytick[ax1.patches.index(i)]-vert_diff,
             num_players, fontweight= 'bold', color= 'Black',va="bottom")
             
             # dcha
-            plt.text(i.get_width()-i.get_width() - maxName- xtick[1]/4,i.get_y(),
+            plt.text(i.get_width()-i.get_width() - maxName- xtick[1]/4,ytick[ax1.patches.index(i)]-vert_diff,
             num_players, fontweight= 'bold', color= 'Black',va="bottom")
 
             num_players-=1
         #//-------- Nombres de los paises
 
-            plt.text(i.get_width()-i.get_width()- maxName,i.get_y(),
+            #plt.text(i.get_width()-i.get_width()- maxName,(i.get_y()+ax1.patches.index[i+1].get_y()/2),
+            plt.text(i.get_width()-i.get_width()- maxName,ytick[ax1.patches.index(i)]-vert_diff,
             tag[ax1.patches.index(i)],va="bottom")
     
-
+        
         plt.title(stat_names[diff_fixed.columns.get_loc(col)], fontsize= 30, fontweight='bold', color='Black')
         plt.text(TextVar, len(ytick), 'Variation', fontweight='bold', color= 'Black', fontsize= 20)
         ax1.grid(True, color='Gray',linestyle=':', linewidth=0.5)
         ax1.set_xlim(right=max(data[col]))
         plt.subplots_adjust(left=0.2,bottom=0.03, right=0.55,top=0.95)
         fig.set_size_inches(18,8)
-        plt.savefig('./data/graphs/'+ col +'.png',bbox_inches='tight')
+        plt.savefig(f"{GRAPHS}/{col}.png",bbox_inches='tight')
         plt.close()
 
 create_stats()

@@ -1,16 +1,20 @@
 import os
+from aux_funcs import *
+from conf import ENV, GRAPHS
+import stats_v2
+
+import traceback
 from discord.ext import commands
 from discord import *
 from dotenv import load_dotenv
-from stats import *
 from bs4 import BeautifulSoup
-import sys    
-sys.path.append("bot-v2\scr")
-import stats_v2
+import matplotlib as mat
+import matplotlib.pyplot as plt
+import requests
 
 
 #Bot token section
-load_dotenv()                           
+load_dotenv(ENV)                           
 TOKEN = os.getenv('DISCORD_TOKEN')
 bot = commands.Bot(intents=Intents.all(),command_prefix='>',help_command=None,activity= Game(name=">help"))  #bot prefix ej: >save
 bot.remove_command('help')
@@ -81,7 +85,7 @@ async def stats(ctx,currentLink, oldLink="",canalID="    1"):
     global csvNuevo
     global apikey
     ctxCommand= ctx
-    await ctx.send(embed=Embed(title="Generating graphs...",colour=Color.blue()))
+    await ctx.send(embed=Embed(title="Commencing...",colour=Color.blue()))
     try:
         canal= int(canalID)
     except Exception as e:
@@ -151,9 +155,8 @@ async def stats(ctx,currentLink, oldLink="",canalID="    1"):
         actualizaURL()
         peticion = requests.get(enlace).text
         escribeArchivo(csvNuevo,peticion)
-        arreglaCSV(csvNuevo)
-        arreglaCSV(csvNuevo)
-
+        arreglaCSV_v2(csvNuevo)
+        arreglaCSV_v2(csvNuevo)
 
 
         if(oldLink!=""): 
@@ -164,8 +167,8 @@ async def stats(ctx,currentLink, oldLink="",canalID="    1"):
         
         peticion = requests.get(enlace).text
         escribeArchivo(csvAntiguo,peticion)
-        arreglaCSV(csvAntiguo)
-        arreglaCSV(csvAntiguo)
+        arreglaCSV_v2(csvAntiguo)
+        arreglaCSV_v2(csvAntiguo)
         arreglaPlayers(csvNuevo,csvAntiguo)
 
 
@@ -177,8 +180,10 @@ async def stats(ctx,currentLink, oldLink="",canalID="    1"):
         raise  
     
     b=False
+    await ctx.send(embed=Embed(title="Generating graphs...",colour=Color.blue()))
     while(b==False):
         try:
+            
             stats_v2.initialize_data()
             stats_v2.create_stats()
             await ctx.send(embed=Embed(title="Done",colour=Color.blue()))
@@ -187,8 +192,8 @@ async def stats(ctx,currentLink, oldLink="",canalID="    1"):
             listaFotos=["desarrolloTotal", "fuerzaPais", "income", "forceLimit",
               "innovacion", "manpower", "gastoTotal", "provincias", "fuerzaEjercito", 
               "mediaReyes", "valorEdificios", "clicks", "calidad", "consejeros"]
-            [await ctx.send(file=File('./data/graphs/'+i+'.png')) for i in listaFotos];
-            b=True if canalID=="    1" else [await channel.send(file=File('./data/graphs/'+i+'.png')) 
+            [await ctx.send(file=File(f"{GRAPHS}/{i}.png")) for i in listaFotos];
+            b=True if canalID=="    1" else [await ctx.send(file=File(f"{GRAPHS}/{i}.png")) 
                                              for i in listaFotos];b=True
 
         except TypeError as e:
@@ -199,7 +204,7 @@ async def stats(ctx,currentLink, oldLink="",canalID="    1"):
             
             if(str(e).strip().startswith("not enough values to unpack") == True or
                str(e).strip().startswith("'float' object is not iterable")):
-                print(type(e).__name__, e)
+                print("\n#######\n",type(e),type(e).__name__, e,traceback.format_exc(),"\n#######\n")
                 res= open(csvAntiguo,"r")
                 ls= list(i for i in res)
                 for line in ls:
