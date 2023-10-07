@@ -11,13 +11,18 @@ from bs4 import BeautifulSoup
 import matplotlib as mat
 import matplotlib.pyplot as plt
 import requests
-
+import xml.etree.ElementTree as ET
 
 #Bot token section
 load_dotenv(ENV)                           
 TOKEN = os.getenv('DISCORD_TOKEN')
 bot = commands.Bot(intents=Intents.all(),command_prefix='>',help_command=None,activity= Game(name=">help"))  #bot prefix ej: >save
 bot.remove_command('help')
+
+# Strings
+tree = ET.parse('resources\strings.xml')
+root = tree.getroot()
+help_msg = root.find('help').text
 
 # Global section
 apikey = os.getenv("API_KEY")
@@ -29,13 +34,29 @@ csvAntiguo= ("./data/csv/old.csv")
 contries= ("./data/00_countries.txt")
 skanderDown= "The savefile with given ID was not foundSkanderbeg's server might be temporarily down.Otherwise, if you tried to upload a save during a downtime you might need to reupload it.Apologies for the inconvenience."
 paises=""
+
 def actualizaURL():
     global enlace
     global apikey
     global save
     enlace= "https://skanderbeg.pm/api.php?key="+apikey+"&scope=getCountryData&save="+save+"&country="+paises+"&value=player;total_development;overall_strength;monthly_income;FL;innovativeness;max_manpower;spent_total;provinces;armyStrength;average_monarch;buildings_value;total_mana_spent_on_deving;qualityScore;spent_on_advisors&format=csv"+ia
+
 embedError= Embed(title="Error",colour=Color.blue())
 genericError ="Unknown Error. Possible causes: \n->the skanderbeg links aren't from the same game\n->you wrote the links backwards\n->you entered the wrong tag, if that was the case\n->you set a non colonial nation as a colony ('C')\n\n Please if you are having this error and dont know why, contact me on discord (Rubense#6711) for further detail"
+
+def reintenta_conexion_text(link,iters=10):
+    i=0
+    while(i<iters):
+        try: return requests.get(link).text
+        except: reintenta_conexion(link)
+        finally: i+=1
+
+def reintenta_conexion(link,iters=10):
+    i=0
+    while(i<iters):
+        try: return requests.get(link)
+        except: reintenta_conexion(link)
+        finally: i+=1
 
 @bot.command()
 async def help(ctx):
@@ -44,28 +65,7 @@ async def help(ctx):
         description="This is a simple discord bot that generates some statistics from an EU4 game thanks to the skanderbeg API", 
         colour=Color.blue(),
         )
-    embed.add_field(name = ">stats",value=
-    """
-    >stats (current link) (previous session link) (canal id)
-
-    ex1: >stats https://skanderbeg.pm/browse.php?id=xxxxxx
-
-    ex2: >stats https://skanderbeg.pm/browse.php?id=xxxxxx https://skanderbeg.pm/browse.php?id=yyyyyy
-
-    ex3: >stats https://skanderbeg.pm/browse.php?id=xxxxxx https://skanderbeg.pm/browse.php?id=yyyyyy 992546898487558276
-
-    -receives two skanderbeg links from an eu4 mp game, 
-     the first being the current game session and the later being from a previous session, 
-     in addition to the server channel id where you want the bot to answer
-
-    -if no channel is specified it will answer in the same channel the command was written
-
-    -you must send two links in order to specify a channel
-
-    -it only requires the current game session link to work but no  difference between that game and the previous session will be displayed 
-
-    -oly collects data from player countries
-    """,
+    embed.add_field(name = ">stats",value=help_msg,
     inline=False)
     embed.add_field(name = "Add me to your server!",value = "https://bit.ly/3P92CZl",inline=True)
     embed.add_field(name = "Developed by Rubense#6711",value="contact him if something goes wrong!",inline=True)
@@ -96,7 +96,8 @@ async def stats(ctx,currentLink, oldLink="",canalID="    1"):
         try:
             hasH1 = False
             hasH2 = False
-            link1= requests.get(currentLink)
+            print(currentLink)
+            link1= reintenta_conexion(currentLink)
             if(str(currentLink).startswith("https://skanderbeg.pm/browse.php?id=") != True):
                 embedError.description="That is not a valid skanderbeg link sir :/"
                 await ctx.send(embed=embedError)
@@ -108,7 +109,7 @@ async def stats(ctx,currentLink, oldLink="",canalID="    1"):
                     await ctx.send(embed=embedError)
                     raise
 
-                link2= requests.get(oldLink)
+                link2= reintenta_conexion(oldLink)
                 soup2= BeautifulSoup(link2.text, "html.parser")
 
                 hasH1 = True if soup2.h1 != None else False
@@ -153,7 +154,8 @@ async def stats(ctx,currentLink, oldLink="",canalID="    1"):
         
         save= currentLink.split("=")[1]
         actualizaURL()
-        peticion = requests.get(enlace).text
+        print(enlace)
+        peticion = reintenta_conexion_text(enlace)
         escribeArchivo(csvNuevo,peticion)
         arreglaCSV_v2(csvNuevo)
         arreglaCSV_v2(csvNuevo)
@@ -165,7 +167,7 @@ async def stats(ctx,currentLink, oldLink="",canalID="    1"):
             ia=""
             actualizaURL()
         
-        peticion = requests.get(enlace).text
+        peticion = reintenta_conexion_text(enlace)
         escribeArchivo(csvAntiguo,peticion)
         arreglaCSV_v2(csvAntiguo)
         arreglaCSV_v2(csvAntiguo)
@@ -238,6 +240,7 @@ async def stats(ctx,currentLink, oldLink="",canalID="    1"):
                                         try:
                                             escribeTag(csvAntiguo,msg.content,cadena[0],apikey,save)
                                             arreglaPlayers2(csvNuevo,csvAntiguo)
+                                            arreglaCSV_v2(csvAntiguo)
                                             await ctx.send(embed=Embed(title="Generating graphs...",colour=Color.blue()))
 
                                         except Exception as e:

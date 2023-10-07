@@ -7,7 +7,7 @@ from conf import *
 dictags = {}
 csv_values, stat_names = [], []
 old, new = pd.DataFrame(), pd.DataFrame()
-tags, players = pd.Series(dtype=object), pd.Series(dtype=object)
+tags, players = pd.Series(), pd.Series()
 
 def initialize_data():
     global dictags, csv_values, stat_names, old, new, tags, players

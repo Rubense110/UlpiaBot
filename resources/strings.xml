@@ -1,0 +1,28 @@
+<root>
+    <help>    >stats (current link) (previous session link) (canal id)
+
+    ex1: >stats https://skanderbeg.pm/browse.php?id=xxxxxx
+
+    ex2: >stats https://skanderbeg.pm/browse.php?id=xxxxxx https://skanderbeg.pm/browse.php?id=yyyyyy
+
+    ex3: >stats https://skanderbeg.pm/browse.php?id=xxxxxx https://skanderbeg.pm/browse.php?id=yyyyyy 992546898487558276
+
+    -receives two skanderbeg links from an eu4 mp game, 
+     the first being the current game session and the later being from a previous session, 
+     in addition to the server channel id where you want the bot to answer
+
+    -if no channel is specified it will answer in the same channel the command was written
+
+    -you must send two links in order to specify a channel
+
+    -it only requires the current game session link to work but no  difference between that game and the previous session will be displayed 
+
+    -oly collects data from player countries</help>
+
+    <unknown_error>Unknown Error. Possible causes: \n->the skanderbeg links aren't from the same game\n->you wrote the links backwards\n->you entered the wrong tag, if that was the case\n->you set a non colonial nation as a colony ('C')\n\n Please if you are having this error and dont know why, contact me on discord (Rubense#6711) for further detail</unknown_error>
+
+    <formation_error> is not present in the previous save\nmost likely it was formed by another tag \n Please insert the tag that formed "+cadena[0]+"\n if this is a colony or you are having problems with this enter 'C' instead of the tag </formation_error>
+
+    <permission_error>I do not have permissions to write in that channel, please retry the command with a valid Channel ID</permission_error>
+    <skander_down>The savefile with given ID was not foundSkanderbeg's server might be temporarily down.Otherwise, if you tried to upload a save during a downtime you might need to reupload it.Apologies for the inconvenience.</skander_down>
+</root>
