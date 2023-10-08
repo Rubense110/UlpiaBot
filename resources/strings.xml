@@ -24,5 +24,7 @@
     <formation_error> is not present in the previous save\nmost likely it was formed by another tag \n Please insert the tag that formed "+cadena[0]+"\n if this is a colony or you are having problems with this enter 'C' instead of the tag </formation_error>
 
     <permission_error>I do not have permissions to write in that channel, please retry the command with a valid Channel ID</permission_error>
+
     <skander_down>The savefile with given ID was not foundSkanderbeg's server might be temporarily down.Otherwise, if you tried to upload a save during a downtime you might need to reupload it.Apologies for the inconvenience.</skander_down>
+
 </root>

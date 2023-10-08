@@ -1,6 +1,6 @@
 import os
 from aux_funcs import *
-from conf import ENV, GRAPHS
+from conf import *
 import stats_v2
 
 import traceback
@@ -23,40 +23,20 @@ bot.remove_command('help')
 tree = ET.parse('resources\strings.xml')
 root = tree.getroot()
 help_msg = root.find('help').text
+genericError = root.find('unknown_error').text
+permissionError = root.find('permission_error').text
+skanderDown= root.find('skander_down').text
+formationError= root.find('formation_error').text
+
+embedError= Embed(title="Error",colour=Color.blue())
 
 # Global section
 apikey = os.getenv("API_KEY")
 save = ""
-ia= "&playersOnly=true"
-enlace = "https://skanderbeg.pm/api.php?key="+apikey+"&scope=getCountryData&save="+save+"&country=&value=player;total_development;overall_strength;monthly_income;FL;innovativeness;max_manpower;spent_total;provinces;armyStrength;average_monarch;buildings_value;total_mana_spent_on_deving;qualityScore;spent_on_advisors&format=csv&playersOnly=true"
-csvNuevo= ("./data/csv/new.csv")
-csvAntiguo= ("./data/csv/old.csv")
-contries= ("./data/00_countries.txt")
-skanderDown= "The savefile with given ID was not foundSkanderbeg's server might be temporarily down.Otherwise, if you tried to upload a save during a downtime you might need to reupload it.Apologies for the inconvenience."
 paises=""
+ia= "&playersOnly=true"
+enlace = actualizaURL(apikey, save, paises, ia)
 
-def actualizaURL():
-    global enlace
-    global apikey
-    global save
-    enlace= "https://skanderbeg.pm/api.php?key="+apikey+"&scope=getCountryData&save="+save+"&country="+paises+"&value=player;total_development;overall_strength;monthly_income;FL;innovativeness;max_manpower;spent_total;provinces;armyStrength;average_monarch;buildings_value;total_mana_spent_on_deving;qualityScore;spent_on_advisors&format=csv"+ia
-
-embedError= Embed(title="Error",colour=Color.blue())
-genericError ="Unknown Error. Possible causes: \n->the skanderbeg links aren't from the same game\n->you wrote the links backwards\n->you entered the wrong tag, if that was the case\n->you set a non colonial nation as a colony ('C')\n\n Please if you are having this error and dont know why, contact me on discord (Rubense#6711) for further detail"
-
-def reintenta_conexion_text(link,iters=10):
-    i=0
-    while(i<iters):
-        try: return requests.get(link).text
-        except: reintenta_conexion(link)
-        finally: i+=1
-
-def reintenta_conexion(link,iters=10):
-    i=0
-    while(i<iters):
-        try: return requests.get(link)
-        except: reintenta_conexion(link)
-        finally: i+=1
 
 @bot.command()
 async def help(ctx):
@@ -77,15 +57,10 @@ async def help(ctx):
 async def stats(ctx,currentLink, oldLink="",canalID="    1"):
 
     mat.rcParams['figure.figsize'] = (19.2,10.8)
-    global enlace
-    global save
-    global paises
-    global ia
-    global csvAntiguo
-    global csvNuevo
-    global apikey
+    global enlace; global save; global paises; global ia; global csvAntiguo; global csvNuevo; global apikey
+
     ctxCommand= ctx
-    await ctx.send(embed=Embed(title="Commencing...",colour=Color.blue()))
+    await ctx.send(embed=Embed(title="Retrieving data...",colour=Color.blue()))
     try:
         canal= int(canalID)
     except Exception as e:
@@ -153,7 +128,7 @@ async def stats(ctx,currentLink, oldLink="",canalID="    1"):
                 raise
         
         save= currentLink.split("=")[1]
-        actualizaURL()
+        enlace = actualizaURL(apikey, save, paises, ia)
         print(enlace)
         peticion = reintenta_conexion_text(enlace)
         escribeArchivo(csvNuevo,peticion)
@@ -165,7 +140,7 @@ async def stats(ctx,currentLink, oldLink="",canalID="    1"):
             save= oldLink.split("=")[1]
             paises= ";".join(listaTags(csvNuevo))
             ia=""
-            actualizaURL()
+            enlace = actualizaURL(apikey, save, paises, ia)
         
         peticion = reintenta_conexion_text(enlace)
         escribeArchivo(csvAntiguo,peticion)
@@ -217,7 +192,7 @@ async def stats(ctx,currentLink, oldLink="",canalID="    1"):
                     elif(len(cadena)==17):
                         pass
                     elif(cadena[2]=="0"):
-                        embedError.description=cadena[0]+" is not present in the previous save\nmost likely it was formed by another tag \n Please insert the tag that formed "+cadena[0]+"\n if this is a colony or you are having problems with this enter 'C' instead of the tag"
+                        embedError.description=cadena[0]+formationError 
                         await ctx.send(embed=embedError)
                         a=False
                         while(a== False):
@@ -259,13 +234,12 @@ async def stats(ctx,currentLink, oldLink="",canalID="    1"):
             
 
         except Forbidden as e:
-            embedError.description="I do not have permissions to write in that channel, please retry the command with a valid Channel ID"
+            embedError.description=permissionError
             await ctx.send(embed=embedError)
             raise 
         
         except Exception as e:
             #print(type(e).__name__, e)
-
             raise
 
 bot.run(TOKEN)

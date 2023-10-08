@@ -123,7 +123,7 @@ def create_stats():
         for i in ax1.patches:
 
 
-        #//-------- Data ticks_y[i] + (ticks_y[1] - ticks_y[0]) / 2
+        #//-------- Data 
             plt.text((xtick[1]-xtick[0])/6 ,ytick[ax1.patches.index(i)]-vert_diff,
             round(data_new[ax1.patches.index(i)]), fontweight= 'bold', color= 'Black')
             

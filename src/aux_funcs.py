@@ -5,6 +5,16 @@ import csv
 def reintenta_conexion(link,iters=10):
     i=0
     while(i<iters):
+        try: return requests.get(link)
+        except: reintenta_conexion(link)
+        finally: i+=1
+
+def actualizaURL(apikey, save, paises, ia):
+    return "https://skanderbeg.pm/api.php?key="+apikey+"&scope=getCountryData&save="+save+"&country="+paises+"&value=player;total_development;overall_strength;monthly_income;FL;innovativeness;max_manpower;spent_total;provinces;armyStrength;average_monarch;buildings_value;total_mana_spent_on_deving;qualityScore;spent_on_advisors&format=csv"+ia
+
+def reintenta_conexion_text(link,iters=10):
+    i=0
+    while(i<iters):
         try: return requests.get(link).text
         except: reintenta_conexion(link)
         finally: i+=1
@@ -171,7 +181,7 @@ def parsea(File):
 
 def escribeTag(csv,tagFormador,formable,apikey,save):
     enlace = "https://skanderbeg.pm/api.php?key="+apikey+"&scope=getCountryData&save="+save+"&country="+tagFormador+"&value=player;total_development;overall_strength;monthly_income;FL;innovativeness;max_manpower;spent_total;provinces;armyStrength;average_monarch;buildings_value;total_mana_spent_on_deving;qualityScore;spent_on_advisors&format=csv"
-    peticion = reintenta_conexion(enlace)
+    peticion = reintenta_conexion_text(enlace)
     file= open(csv, "r")
     replacement=""
     for line in file:

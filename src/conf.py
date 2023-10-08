@@ -12,3 +12,7 @@ ENV = os.path.join(os.path.abspath("."),"resources",".env")
 OLD_CSV = os.path.join(CSV,"old.csv")
 NEW_CSV = os.path.join(CSV,"new.csv")
 
+csvNuevo= ("./data/csv/new.csv")
+csvAntiguo= ("./data/csv/old.csv")
+contries= ("./data/00_countries.txt")
+
