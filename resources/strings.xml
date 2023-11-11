@@ -19,9 +19,16 @@
 
     -oly collects data from player countries</help>
 
-    <unknown_error>Unknown Error. Possible causes: \n->the skanderbeg links aren't from the same game\n->you wrote the links backwards\n->you entered the wrong tag, if that was the case\n->you set a non colonial nation as a colony ('C')\n\n Please if you are having this error and dont know why, contact me on discord (Rubense#6711) for further detail</unknown_error>
+    <unknown_error>Unknown Error. Possible causes: 
 
-    <formation_error> is not present in the previous save\nmost likely it was formed by another tag \n Please insert the tag that formed "+cadena[0]+"\n if this is a colony or you are having problems with this enter 'C' instead of the tag </formation_error>
+    -> the skanderbeg links aren't from the same game
+    -> you wrote the links backwards\n->you entered the wrong tag, if that was the case\n->you set a non colonial nation as a colony ('C')
+    
+    Please if you are having this error and dont know why, contact me on discord (Rubense#6711) for further detail</unknown_error>
+
+    <formation_error> is not present in the previous save
+    most likely it was formed by another tag
+    Please insert the tag that formed it, if this is a colony or you are having problems with this enter 'C' instead of the tag </formation_error>
 
     <permission_error>I do not have permissions to write in that channel, please retry the command with a valid Channel ID</permission_error>
 
